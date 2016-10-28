@@ -31,3 +31,5 @@ target_link_libraries(
     neural-networks
     ${CUDA_LIBRARY}
 )
+
+add_dependencies(neural-network-test neural-networks)

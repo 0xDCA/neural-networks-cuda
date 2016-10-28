@@ -30,3 +30,5 @@ target_link_libraries(
     neural-networks
     ${CUDA_LIBRARY}
 )
+
+add_dependencies(runner neural-networks)
