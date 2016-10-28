@@ -243,7 +243,7 @@ TEST_CASE("calculates the error correctly", "[error]") {
 }
 
 TEST_CASE("trains correctly", "[train]") {
-	SECTION("AND neural network") {
+	SECTION("XOR neural network") {
 		CudaFeedforwardNeuralNetwork network({2, 8, 1});
 
 		ManagedMatrix<double> sample_x(4, 2);

@@ -1,9 +1,9 @@
 /*
  ============================================================================
  Name        : neural-networks.cu
- Author      : 
+ Author      :
  Version     :
- Copyright   : 
+ Copyright   :
  Description : CUDA compute reciprocals
  ============================================================================
  */
@@ -321,15 +321,6 @@ namespace dc_internal {
 			current_deltas -= settings.weights_size;
 			deltas -= settings.weights_size;
 			thread_weights -= settings.weights_size;
-
-			/*printf("\nCurrent deltas:\n");
-			print_weights(layers, layer_neurons, current_deltas);
-
-			printf("\nGlobal deltas:\n");
-			print_weights(layers, layer_neurons, current_deltas);
-
-			printf("\nWeights after:\n");
-			print_weights(layers, layer_neurons, thread_weights);*/
 		}
 
 		free(activations);
@@ -360,7 +351,7 @@ namespace dc_internal {
 			double original = master_weights[j];
 			//master_weights[j] = 0;
 			for(int i = 0; i < total_threads; ++i) {
-				master_weights[j] += (thread_weights[i * weights_size + j] - original) /*/ total_threads*/;
+				master_weights[j] += (thread_weights[i * weights_size + j] - original) / total_threads;
 			}
 		}
 	}
@@ -480,7 +471,7 @@ namespace dc_internal {
 		CUDA_CHECK_RETURN(cudaGetLastError());
 
 		double* d_out_temp = d_out;
-		for(int i = 0; i < layer_neurons.size(); ++i) {
+		for(int i = 0; i < result.size(); ++i) {
 			int dimensions = result[i].get_columns() * result[i].get_rows();
 			CUDA_CHECK_RETURN(cudaMemcpy(result[i].get_internal_data_unsafe(), d_out_temp,
 					sizeof(double) * dimensions, cudaMemcpyDeviceToHost));
@@ -647,4 +638,3 @@ static void checkCudaErrorAux(const char *file, unsigned line, const char *state
 			<< file << ":" << line << std::endl;
 	exit(1);
 }
-
