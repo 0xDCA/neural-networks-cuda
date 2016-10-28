@@ -3,7 +3,7 @@
 #include "ManagedMatrix.h"
 #include "TrainSettings.h"
 #include "CudaFeedforwardNeuralNetwork.h"
-#include "util.h"
+#include "data-util.h"
 #include "int-util.h"
 
 using dc::ManagedMatrix;
