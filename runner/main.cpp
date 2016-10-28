@@ -1,5 +1,6 @@
 #include <iostream>
 #include <random>
+#include <cxxopts.hpp>
 #include "ManagedMatrix.h"
 #include "TrainSettings.h"
 #include "CudaFeedforwardNeuralNetwork.h"
@@ -9,16 +10,30 @@
 using dc::ManagedMatrix;
 using std::cout;
 
-int main(int argc, const char* argv[])
+int main(int argc, char* argv[])
 {
-    if (argc != 4) {
-      cout << "Usage: ./Neural_networks threads iterations inner_steps\n";
-      return -1;
-    }
+	cxxopts::Options options("runner",
+			"A PoC implementation of a parallel Feed-forward neural network for CUDA");
 
-    int threads = atoi(argv[1]),
-		iterations = atoi(argv[2]),
-		inner_steps = atoi(argv[3]);
+	options.add_options()
+	  ("t,threads", "Number of threads to use", cxxopts::value<int>()->default_value("1"))
+	  ("b,blocks", "Number of blocks to use", cxxopts::value<int>()->default_value("1"))
+	  ("i,iterations", "Max iterations", cxxopts::value<int>()->default_value("1"))
+	  ("s,steps", "Inner steps (steps per thread)", cxxopts::value<int>()->default_value("1"))
+	  ("r,regularization_term", "Regularization term", cxxopts::value<double>()->default_value("0.0"))
+	  ("m,momentum", "Momentum", cxxopts::value<double>()->default_value("0.0"))
+	  ("l,learning_rate", "Learning rate", cxxopts::value<double>()->default_value("0.1"))
+	  ("e,epsilon", "During training, weights will be initialized between [-e, e]", cxxopts::value<double>()->default_value("10"))
+	  ("error", "Target error", cxxopts::value<double>()->default_value("0.00001"))
+	  ("h,help", "Print help")
+	  ;
+
+	options.parse(argc, argv);
+
+	if (options.count("help")) {
+		std::cout << options.help({"", "Group"}) << std::endl;
+		exit(0);
+	}
 
     std::random_device rd;
     std::mt19937 generator(rd());
@@ -68,24 +83,32 @@ int main(int argc, const char* argv[])
     ManagedMatrix<double> test_sample_x = test_data.first.get_transposed();
     ManagedMatrix<double> test_sample_y = test_data.second.get_transposed();*/
 
-
     TrainSettings train_settings;
-    train_settings.threads = threads;
-	train_settings.blocks = 10;
+    train_settings.threads = options["threads"].as<int>();
+	train_settings.blocks = options["blocks"].as<int>();
 	train_settings.generator = &generator;
-    train_settings.inner_steps = inner_steps;
-    train_settings.iterations = iterations;
-    train_settings.regularization_term = 0.0;
+    train_settings.inner_steps = options["steps"].as<int>();
+    train_settings.iterations = options["iterations"].as<int>();
+    train_settings.initialize_weights_randomly = true;
+    train_settings.regularization_term = options["regularization_term"].as<double>();
+	train_settings.momentum = options["momentum"].as<double>();
+	train_settings.step_factor = options["learning_rate"].as<double>();
+	train_settings.random_epsilon = options["epsilon"].as<double>();
+	train_settings.target_error = options["error"].as<double>();
+
+    /*train_settings.regularization_term = 0.0;
     train_settings.momentum = 0.9;
     train_settings.step_factor = 1.0;
     train_settings.random_epsilon = 10;
-    train_settings.target_error = 0.00000001;
+    train_settings.target_error = 0.00000001;*/
 
     /*train_settings.regularization_term = 0.1;
 	train_settings.momentum = 0.6;
 	train_settings.step_factor = 0.06;
 	train_settings.random_epsilon = 10;
 	train_settings.target_error = 0.001;*/
+
+    train_settings.validate();
 
     auto result = network.train(sample_x, sample_y, train_settings);
 
